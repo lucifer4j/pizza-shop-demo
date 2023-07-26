@@ -6,9 +6,16 @@ type MetricProps = {
   label: string;
   current?: number;
   previous?: number;
+  isMoney: boolean;
 }
 
-function Metric({ label, current, previous }: MetricProps): ReactElement {
+const numberFormat = new Intl.NumberFormat("en-US");
+const currencyFormat = new Intl.NumberFormat('en-US', {
+    style: 'currency',
+    currency: 'USD',
+});
+
+function Metric({ label, current, previous, isMoney }: MetricProps): ReactElement {
   let delta = 0;
   let icon: any = null;
   let color = "rgba(49, 51, 63, 0.6)";
@@ -24,10 +31,12 @@ function Metric({ label, current, previous }: MetricProps): ReactElement {
     }
   }
 
+  let value = current || 0;
+
   return (
-    <div>
+    <div style={{textAlign: "center"}}>
       <div style={{
-        fontSize: "14px",
+        fontSize: "1rem",
         color: "rgb(49, 51, 63)",
         height: "auto",
         minHeight: "1.5rem",
@@ -38,7 +47,7 @@ function Metric({ label, current, previous }: MetricProps): ReactElement {
         fontSize: "2.25rem",
         color: "rgb(49, 51, 63)",
         paddingBottom: "0.25rem",
-      }}>{current}</div>
+      }}>{isMoney ? currencyFormat.format(value): numberFormat.format(value)}</div>
       {Boolean(delta) && (
         <div style={{
             fontSize: "1rem",
@@ -49,7 +58,7 @@ function Metric({ label, current, previous }: MetricProps): ReactElement {
             justifyContent: "center"
         }}>
           <FontAwesomeIcon icon={icon} size="lg" color={color} />
-          <span style={{whiteSpace: "pre"}}> {delta} </span>
+          <span style={{whiteSpace: "pre"}}>   {isMoney ? currencyFormat.format(delta): numberFormat.format(delta)}   </span>
         </div>
       )}
     </div>

@@ -4,7 +4,6 @@ import io.reactiverse.pinot.client.VertxConnection;
 import io.reactiverse.pinot.client.VertxConnectionFactory;
 import io.vertx.core.AbstractVerticle;
 import io.vertx.core.Future;
-import io.vertx.core.buffer.Buffer;
 import io.vertx.core.http.HttpMethod;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
@@ -40,18 +39,24 @@ public class DashboardVerticle extends AbstractVerticle {
 
   private void queryDashboard(RoutingContext routingContext) {
     Future
-        .all(queryOrdersInfo(), queryOrdersRevenue(), queryOrdersRecent())
-        .map(compositeFuture -> new JsonObject()
+        .all(
+            queryOrdersInfo(),
+            queryOrdersRevenue(),
+            queryOrdersRecent(),
+            queryMostPopularItems(),
+            queryMostPopularCategories()
+        ).map(compositeFuture -> new JsonObject()
             .put("ordersInfo", compositeFuture.resultAt(0))
             .put("ordersRevenue", compositeFuture.resultAt(1))
             .put("ordersRecent", compositeFuture.resultAt(2))
-            .toBuffer())
-        .onSuccess(buffer -> routingContext
+            .put("mostPopularItems", compositeFuture.resultAt(3))
+            .put("mostPopularCategories", compositeFuture.resultAt(4))
+            .toBuffer()
+        ).onSuccess(buffer -> routingContext
             .response()
             .putHeader("content-type", "application/json")
             .end(buffer)
-        )
-        .onFailure(routingContext::fail);
+        ).onFailure(routingContext::fail);
   }
 
   private Future<Object> queryOrdersInfo() {
@@ -60,6 +65,8 @@ public class DashboardVerticle extends AbstractVerticle {
              , count(*) FILTER(WHERE ts <= ago('PT1M') AND ts > ago('PT2M')) AS events1Min2Min
              , sum(price) FILTER(WHERE ts > ago('PT1M')) AS total1Min
              , sum(price) FILTER(WHERE ts <= ago('PT1M') AND ts > ago('PT2M')) AS total1Min2Min
+             , avg(price) FILTER(WHERE ts > ago('PT1M')) AS average1Min
+             , avg(price) FILTER(WHERE ts <= ago('PT1M') AND ts > ago('PT2M')) AS average1Min2Min
           from orders
          where ts > ago('PT2M')
          limit 1
@@ -70,7 +77,9 @@ public class DashboardVerticle extends AbstractVerticle {
           .put("events1Min", resultSet.getDouble(0, 0))
           .put("events1Min2Min", resultSet.getDouble(0, 1))
           .put("total1Min", resultSet.getDouble(0, 2))
-          .put("total1Min2Min", resultSet.getDouble(0, 3));
+          .put("total1Min2Min", resultSet.getDouble(0, 3))
+          .put("average1Min", resultSet.getDouble(0, 4))
+          .put("average1Min2Min", resultSet.getDouble(0, 5));
       return json;
     }, EMPTY_JSON_OBJECT);
   }
@@ -123,6 +132,56 @@ public class DashboardVerticle extends AbstractVerticle {
             .put("userId", resultSet.getLong(index, 3))
             .put("productsOrdered", resultSet.getLong(index, 4))
             .put("totalQuantity", resultSet.getDouble(index, 5));
+        json.add(object);
+      }
+      return json;
+    }, EMPTY_JSON_ARRAY);
+  }
+
+  private Future<Object> queryMostPopularItems() {
+    String query = """
+        select "product.name" AS product
+             , "product.image" AS image
+             , distinctcount(orderId) AS orders
+             , sum("orderItem.quantity") AS quantity
+          from order_items_enriched
+         where ts > ago('PT1M')
+      group by product, image
+      order by count(*) DESC
+         limit 5
+    """;
+    return executeQuery(query, resultSet -> {
+      var json = new JsonArray();
+      for (int index = 0; index < resultSet.getRowCount(); index++) {
+        var object = new JsonObject()
+            .put("product", resultSet.getString(index, 0))
+            .put("image", resultSet.getString(index, 1))
+            .put("orders", resultSet.getDouble(index, 2))
+            .put("quantity", resultSet.getDouble(index, 3));
+        json.add(object);
+      }
+      return json;
+    }, EMPTY_JSON_ARRAY);
+  }
+
+  private Future<Object> queryMostPopularCategories() {
+    String query = """
+        select "product.category" AS category
+             , distinctcount(orderId) AS orders
+             , sum("orderItem.quantity") AS quantity
+          from order_items_enriched
+         where ts > ago('PT1M')
+      group by category
+      order by count(*) DESC
+         limit 5
+    """;
+    return executeQuery(query, resultSet -> {
+      var json = new JsonArray();
+      for (int index = 0; index < resultSet.getRowCount(); index++) {
+        var object = new JsonObject()
+            .put("category", resultSet.getString(index, 0))
+            .put("orders", resultSet.getDouble(index, 1))
+            .put("quantity", resultSet.getDouble(index, 2));
         json.add(object);
       }
       return json;

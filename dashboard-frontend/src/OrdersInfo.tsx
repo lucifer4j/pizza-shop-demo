@@ -4,19 +4,40 @@ import React from "react";
 import Metric from "./Metric";
 
 type OrdersInfoProps = {
-    orderInfo?: OrderInfo
+    ordersInfo?: OrderInfo
 };
 
-function OrdersInfo({orderInfo}: OrdersInfoProps) {
+function OrdersInfo({ordersInfo}: OrdersInfoProps) {
     return (
-        <Row>
-          <Col>
-              <Metric label="Orders" current={orderInfo?.events1Min} previous={orderInfo?.events1Min2Min} />
-          </Col>
-          <Col>
-              <Metric label="Revenue" current={orderInfo?.total1Min} previous={orderInfo?.total1Min2Min} />
-          </Col>
-        </Row>
+        <div>
+            <h3>Orders in the last 1 minute</h3>
+            <Row>
+                <Col>
+                    <Metric
+                        label="# of Orders"
+                        current={ordersInfo?.events1Min}
+                        previous={ordersInfo?.events1Min2Min}
+                        isMoney={false}
+                    />
+                </Col>
+                <Col>
+                    <Metric
+                        label="Revenue in $"
+                        current={ordersInfo?.total1Min}
+                        previous={ordersInfo?.total1Min2Min}
+                        isMoney
+                    />
+                </Col>
+                <Col>
+                    <Metric
+                        label="Average order value in $"
+                        current={ordersInfo?.average1Min}
+                        previous={ordersInfo?.average1Min2Min}
+                        isMoney
+                    />
+                </Col>
+            </Row>
+        </div>
     );
 }
 

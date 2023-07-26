@@ -16,6 +16,7 @@ const timeFormatter = timeFormat("%H:%M");
 function Chart({name, color, yAxisFormat, id, stats}: OrdersChartProps) {
     const series = [{id, data: stats.slice(1, stats.length - 1)}];
     return <ResponsiveLine
+        theme={{background: "rgba(0, 0, 0, 0.05)"}}
         data={series}
         xScale={{
             type: "time"
@@ -26,7 +27,7 @@ function Chart({name, color, yAxisFormat, id, stats}: OrdersChartProps) {
             max: "auto"
         }}
         xFormat={value => timeFormatter(value as Date)}
-        margin={{ top: 50, right: 60, bottom: 50, left: 60 }}
+        margin={{ top: 10, right: 10, bottom: 50, left: 60 }}
         colors={{ scheme: color }}
         axisBottom={{
             tickSize: 5,

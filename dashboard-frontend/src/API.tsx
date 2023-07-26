@@ -8,7 +8,9 @@ function queryDashboard(): Promise<Dashboard> {
                 orders: item.orders,
                 revenue: item.revenue
             })) ?? [],
-            ordersRecent: data.ordersRecent ?? []
+            ordersRecent: data.ordersRecent ?? [],
+            mostPopularItems: data.mostPopularItems ?? [],
+            mostPopularCategories: data.mostPopularCategories ?? []
         }));
 }
 
