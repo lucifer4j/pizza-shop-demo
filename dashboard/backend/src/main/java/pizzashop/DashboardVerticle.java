@@ -9,6 +9,7 @@ import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import io.vertx.ext.web.Router;
 import io.vertx.ext.web.RoutingContext;
+import io.vertx.ext.web.handler.StaticHandler;
 import org.apache.pinot.client.ResultSet;
 import org.apache.pinot.client.VertxPinotClientTransport;
 
@@ -23,18 +24,32 @@ public class DashboardVerticle extends AbstractVerticle {
 
   @Override
   public void start() {
+    var brokerUrl = getBrokerUrl();
     var transport = new VertxPinotClientTransport(vertx);
-    connection = VertxConnectionFactory.fromHostList(vertx, List.of("localhost:8099"), transport);
+    connection = VertxConnectionFactory.fromHostList(vertx, List.of(brokerUrl), transport);
 
     var router = Router.router(vertx);
-    router.route(HttpMethod.GET, "/api/dashboard").handler(this::queryDashboard);
+    router.get("/api/dashboard").handler(this::queryDashboard);
+    router.get().handler(StaticHandler.create());
 
     vertx
         .createHttpServer()
         .requestHandler(router)
         .listen(8080)
-        .onSuccess(server -> System.out.println("Success!"))
+        .onSuccess(server -> System.out.println("Server started successfully!"))
         .onFailure(Throwable::printStackTrace);
+  }
+
+  private String getBrokerUrl() {
+    var host = System.getenv("PINOT_SERVER");
+    if (host == null || host.isEmpty()) {
+      host = "pinot-broker";
+    }
+    var port = System.getenv("PINOT_PORT");
+    if (port == null || port.isEmpty()) {
+      port = "8099";
+    }
+    return host + ":" + port;
   }
 
   private void queryDashboard(RoutingContext routingContext) {

@@ -20,7 +20,7 @@ function MostPopularItems({items}: MostPopularItemsProps) {
                 <tbody>
                 {items.map(item => <tr key={item.product}>
                     <td>{item.product}</td>
-                    <td><img src={item.image} width="60" alt={`Image of ${item.product}`}/></td>
+                    <td><img src={item.image} width="60" alt={item.product}/></td>
                     <td>{item.orders}</td>
                     <td>{item.quantity}</td>
                 </tr>)}

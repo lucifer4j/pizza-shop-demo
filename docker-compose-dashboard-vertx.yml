@@ -1,0 +1,14 @@
+version: "3.8"
+services:
+  dashboard-vertx:
+    build: dashboard
+    restart: unless-stopped
+    container_name: dashboard-vertx
+    ports:
+      - "8080:8080"
+    environment:
+      - PINOT_SERVER
+      - PINOT_PORT
+    depends_on:
+      pinot-broker:
+        condition: service_healthy

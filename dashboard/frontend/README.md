@@ -1,5 +1,7 @@
 # Getting Started with Create React App
 
+A frontend for the Vert.x client based dashboard.
+
 This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
 
 ## Available Scripts

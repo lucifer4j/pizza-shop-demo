@@ -1,4 +1,3 @@
-import Table from 'react-bootstrap/Table';
 import Row from "react-bootstrap/Row";
 import Col from "react-bootstrap/Col";
 import MostPopularItems from "./MostPopularItems";
