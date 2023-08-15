@@ -1,19 +1,19 @@
 version: "3.8"
 services:
-  dashboard-enriched:
-    build: streamlit
-    restart: unless-stopped
-    container_name: dashboard-enriched
-    ports:
-      - "8502:8501"
-    depends_on:
-      pinot-controller:
-        condition: service_healthy
-    volumes:
-      - ./streamlit/app_enriched.py:/workdir/app.py
-    environment:
-      - PINOT_SERVER
-      - PINOT_PORT
+#  dashboard-enriched:
+#    build: streamlit
+#    restart: unless-stopped
+#    container_name: dashboard-enriched
+#    ports:
+#      - "8502:8501"
+#    depends_on:
+#      pinot-controller:
+#        condition: service_healthy
+#    volumes:
+#      - ./streamlit/app_enriched.py:/workdir/app.py
+#    environment:
+#      - PINOT_SERVER
+#      - PINOT_PORT
   kafka-streams-quarkus:
     build: kafka-streams-quarkus
     restart: unless-stopped

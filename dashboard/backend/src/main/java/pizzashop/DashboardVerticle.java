@@ -101,11 +101,11 @@ public class DashboardVerticle extends AbstractVerticle {
 
   private Future<Object> queryOrdersRevenue() {
     String query = """
-          select ToDateTime(DATETRUNC('minute', ts), 'yyyy-MM-dd HH:mm:ss') AS dateMin
+          select ToDateTime(DATETRUNC('second', ts), 'yyyy-MM-dd HH:mm:ss') AS dateMin
                , count(*) AS orders
                , sum(price) AS revenue
             from orders
-           where ts > ago('PT1H')
+           where ts > ago('PT1M')
         group by dateMin
         order by dateMin desc
            limit 10000
